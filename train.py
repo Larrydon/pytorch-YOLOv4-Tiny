@@ -1,6 +1,7 @@
 #-------------------------------------#
 #       对数据集进行训练
 #-------------------------------------#
+from collections import deque
 import datetime
 import os
 from functools import partial
@@ -22,6 +23,8 @@ from utils.dataloader import YoloDataset, yolo_dataset_collate
 from utils.utils import (get_anchors, get_classes, seed_everything,
                          show_config, worker_init_fn)
 from utils.utils_fit import fit_one_epoch
+
+from cfg import Cfg
 
 '''
 训练自己的目标检测模型一定需要注意以下几点：
@@ -75,7 +78,7 @@ if __name__ == "__main__":
     #   classes_path    指向model_data下的txt，与自己训练的数据集相关 
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
-    classes_path    = 'model_data/voc_classes.txt'
+    #classes_path    = 'model_data/voc_classes.txt'    
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
@@ -83,8 +86,8 @@ if __name__ == "__main__":
     #                   官方使用的就是[[3, 4, 5], [1, 2, 3]]，
     #                   序号为0先验框未被使用到，无需过分纠结。
     #---------------------------------------------------------------------#
-    anchors_path    = 'model_data/yolo_anchors.txt'
-    anchors_mask    = [[3, 4, 5], [1, 2, 3]]
+    #anchors_path    = 'model_data/yolo_anchors.txt'
+    #anchors_mask    = [[3, 4, 5], [1, 2, 3]]
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
     #   模型的 预训练权重 比较重要的部分是 主干特征提取网络的权值部分，用于进行特征提取。
@@ -105,7 +108,8 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = 'model_data/yolov4_tiny_weights_coco.pth'
+    #model_path      = 'model_data/yolov4_tiny_weights_coco.pth'
+    
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -207,8 +211,8 @@ if __name__ == "__main__":
     #                           Adam可以使用相对较小的UnFreeze_Epoch
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
-    UnFreeze_Epoch      = 300
-    Unfreeze_batch_size = 16
+    # UnFreeze_Epoch      = 300
+    # Unfreeze_batch_size = 16
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
@@ -246,7 +250,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
-    save_dir            = 'logs'
+    #save_dir            = 'logs'
     #------------------------------------------------------------------#
     #   eval_flag       是否在训练时进行评估，评估对象为验证集
     #                   安装pycocotools库后，评估体验更佳。
@@ -269,9 +273,9 @@ if __name__ == "__main__":
     #   train_annotation_path   训练图片路径和标签
     #   val_annotation_path     验证图片路径和标签
     #------------------------------------------------------#
-    train_annotation_path   = '2007_train.txt'
-    val_annotation_path     = '2007_val.txt'
-
+    #train_annotation_path   = '2007_train.txt'
+    #val_annotation_path     = '2007_val.txt'
+    
     seed_everything(seed)
     #------------------------------------------------------#
     #   设置用到的显卡
@@ -293,27 +297,27 @@ if __name__ == "__main__":
     #----------------------------------------------------#
     #   获取classes和anchor
     #----------------------------------------------------#
-    class_names, num_classes = get_classes(classes_path)
-    anchors, num_anchors     = get_anchors(anchors_path)
+    class_names, num_classes = get_classes(Cfg.classes_path)
+    anchors, num_anchors     = get_anchors(Cfg.anchors_path)
 
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, pretrained = pretrained, phi = phi)
+    model = YoloBody(Cfg.anchors_mask, num_classes, pretrained = pretrained, phi = phi)
     if not pretrained:
         weights_init(model)
-    if model_path != '':
+    if Cfg.model_path != '':
         #------------------------------------------------------#
         #   权值文件请看README，百度网盘下载
         #------------------------------------------------------#
         if local_rank == 0:
-            print('Load weights {}.'.format(model_path))
+            print('Load weights {}.'.format(Cfg.model_path))
         
         #------------------------------------------------------#
         #   根据预训练权重的Key和模型的Key进行加载
         #------------------------------------------------------#
         model_dict      = model.state_dict()
-        pretrained_dict = torch.load(model_path, map_location = device)
+        pretrained_dict = torch.load(Cfg.model_path, map_location = device)
         load_key, no_load_key, temp_dict = [], [], {}
         for k, v in pretrained_dict.items():
             if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
@@ -334,13 +338,13 @@ if __name__ == "__main__":
     #----------------------#
     #   获得损失函数
     #----------------------#
-    yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing)
+    yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, Cfg.anchors_mask, label_smoothing)
     #----------------------#
     #   记录Loss
     #----------------------#
     if local_rank == 0:
         time_str        = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')
-        log_dir         = os.path.join(save_dir, "loss_" + str(time_str))
+        log_dir         = os.path.join(Cfg.TRAIN_TENSORBOARD_DIR, "loss_" + str(time_str))
         loss_history    = LossHistory(log_dir, model, input_shape=input_shape)
     else:
         loss_history    = None
@@ -379,19 +383,19 @@ if __name__ == "__main__":
     #---------------------------#
     #   读取数据集对应的txt
     #---------------------------#
-    with open(train_annotation_path, encoding='utf-8') as f:
+    with open(Cfg.train_label, encoding='utf-8') as f:
         train_lines = f.readlines()
-    with open(val_annotation_path, encoding='utf-8') as f:
+    with open(Cfg.val_label, encoding='utf-8') as f:
         val_lines   = f.readlines()
     num_train   = len(train_lines)
     num_val     = len(val_lines)
 
     if local_rank == 0:
         show_config(
-            classes_path = classes_path, anchors_path = anchors_path, anchors_mask = anchors_mask, model_path = model_path, input_shape = input_shape, \
-            Init_Epoch = Init_Epoch, Freeze_Epoch = Freeze_Epoch, UnFreeze_Epoch = UnFreeze_Epoch, Freeze_batch_size = Freeze_batch_size, Unfreeze_batch_size = Unfreeze_batch_size, Freeze_Train = Freeze_Train, \
+            classes_path = Cfg.classes_path, anchors_path = Cfg.anchors_path, anchors_mask = Cfg.anchors_mask, model_path = Cfg.model_path, input_shape = input_shape, \
+            Init_Epoch = Init_Epoch, Freeze_Epoch = Freeze_Epoch, UnFreeze_Epoch = Cfg.UnFreeze_Epoch, Freeze_batch_size = Freeze_batch_size, Unfreeze_batch_size = Cfg.Unfreeze_batch_size, Freeze_Train = Freeze_Train, \
             Init_lr = Init_lr, Min_lr = Min_lr, optimizer_type = optimizer_type, momentum = momentum, lr_decay_type = lr_decay_type, \
-            save_period = save_period, save_dir = save_dir, num_workers = num_workers, num_train = num_train, num_val = num_val
+            save_period = save_period, checkpoints = Cfg.checkpoints, save_log = Cfg.TRAIN_TENSORBOARD_DIR, num_workers = num_workers, num_train = num_train, num_val = num_val
         )
         #---------------------------------------------------------#
         #   总训练世代指的是遍历全部数据的总次数
@@ -399,14 +403,19 @@ if __name__ == "__main__":
         #   每个训练世代包含若干训练步长，每个训练步长进行一次梯度下降。
         #   此处仅建议最低训练世代，上不封顶，计算时只考虑了解冻部分
         #----------------------------------------------------------#
-        wanted_step = 5e4 if optimizer_type == "sgd" else 1.5e4
-        total_step  = num_train // Unfreeze_batch_size * UnFreeze_Epoch
+        #wanted_step = 5e4 if optimizer_type == "sgd" else 1.5e4
+        #max_batches=4000	# 類別數量(classes)x2000，目前類別數量為2
+   
+        wanted_step = 2000 * len(class_names)
+        total_step  = num_train // Cfg.Unfreeze_batch_size * Cfg.UnFreeze_Epoch
         if total_step <= wanted_step:
-            if num_train // Unfreeze_batch_size == 0:
+            if num_train // Cfg.Unfreeze_batch_size == 0:
                 raise ValueError('数据集过小，无法进行训练，请扩充数据集。')
-            wanted_epoch = wanted_step // (num_train // Unfreeze_batch_size) + 1
+            
+            #這邊提示只是建議，並不會中止訓練
+            wanted_epoch = wanted_step // (num_train // Cfg.Unfreeze_batch_size) + 1
             print("\n\033[1;33;44m[Warning] 使用%s优化器时，建议将训练总步长设置到%d以上。\033[0m"%(optimizer_type, wanted_step))
-            print("\033[1;33;44m[Warning] 本次运行的总训练数据量为%d，Unfreeze_batch_size为%d，共训练%d个Epoch，计算出总训练步长为%d。\033[0m"%(num_train, Unfreeze_batch_size, UnFreeze_Epoch, total_step))
+            print("\033[1;33;44m[Warning] 本次运行的总训练数据量为%d，Unfreeze_batch_size为%d，共训练%d个Epoch，计算出总训练步长为%d。\033[0m"%(num_train, Cfg.Unfreeze_batch_size, Cfg.UnFreeze_Epoch, total_step))
             print("\033[1;33;44m[Warning] 由于总训练步长为%d，小于建议总步长%d，建议设置总世代为%d。\033[0m"%(total_step, wanted_step, wanted_epoch))
 
     #------------------------------------------------------#
@@ -429,7 +438,7 @@ if __name__ == "__main__":
         #-------------------------------------------------------------------#
         #   如果不冻结训练的话，直接设置batch_size为Unfreeze_batch_size
         #-------------------------------------------------------------------#
-        batch_size = Freeze_batch_size if Freeze_Train else Unfreeze_batch_size
+        batch_size = Freeze_batch_size if Freeze_Train else Cfg.Unfreeze_batch_size
 
         #-------------------------------------------------------------------#
         #   判断当前batch_size，自适应调整学习率
@@ -461,7 +470,7 @@ if __name__ == "__main__":
         #---------------------------------------#
         #   获得学习率下降的公式
         #---------------------------------------#
-        lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
+        lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, Cfg.UnFreeze_Epoch)
         
         #---------------------------------------#
         #   判断每一个世代的长度
@@ -475,9 +484,9 @@ if __name__ == "__main__":
         #---------------------------------------#
         #   构建数据集加载器。
         #---------------------------------------#
-        train_dataset   = YoloDataset(train_lines, input_shape, num_classes, epoch_length = UnFreeze_Epoch, \
+        train_dataset   = YoloDataset(train_lines, input_shape, num_classes, epoch_length = Cfg.UnFreeze_Epoch, \
                                         mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=True, special_aug_ratio=special_aug_ratio)
-        val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = UnFreeze_Epoch, \
+        val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = Cfg.UnFreeze_Epoch, \
                                         mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
         
         if distributed:
@@ -501,7 +510,7 @@ if __name__ == "__main__":
         #   记录eval的map曲线
         #----------------------#
         if local_rank == 0:
-            eval_callback   = EvalCallback(model, input_shape, anchors, anchors_mask, class_names, num_classes, val_lines, log_dir, Cuda, \
+            eval_callback   = EvalCallback(model, input_shape, anchors, Cfg.anchors_mask, class_names, num_classes, val_lines, log_dir, Cuda, \
                                             eval_flag=eval_flag, period=eval_period)
         else:
             eval_callback   = None
@@ -509,13 +518,17 @@ if __name__ == "__main__":
         #---------------------------------------#
         #   开始模型训练
         #---------------------------------------#
-        for epoch in range(Init_Epoch, UnFreeze_Epoch):
+        time_start = datetime.datetime.now()
+        print("\033[1;33;44m[Info] 開始訓練時間=%s\033[0m" %time_start)
+        saved_models = deque()
+        
+        for epoch in range(Init_Epoch, Cfg.UnFreeze_Epoch):
             #---------------------------------------#
             #   如果模型有冻结学习部分
             #   则解冻，并设置参数
             #---------------------------------------#
             if epoch >= Freeze_Epoch and not UnFreeze_flag and Freeze_Train:
-                batch_size = Unfreeze_batch_size
+                batch_size = Cfg.Unfreeze_batch_size
 
                 #-------------------------------------------------------------------#
                 #   判断当前batch_size，自适应调整学习率
@@ -529,7 +542,7 @@ if __name__ == "__main__":
                 #---------------------------------------#
                 #   获得学习率下降的公式
                 #---------------------------------------#
-                lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
+                lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, Cfg.UnFreeze_Epoch)
                 
                 for param in model.backbone.parameters():
                     param.requires_grad = True
@@ -560,10 +573,15 @@ if __name__ == "__main__":
 
             set_optimizer_lr(optimizer, lr_scheduler_func, epoch)
 
-            fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, save_dir, local_rank)
+            fit_one_epoch(saved_models, model_train, model, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, Cfg.UnFreeze_Epoch, Cuda, fp16, scaler, save_period, local_rank)
                         
             if distributed:
                 dist.barrier()
 
         if local_rank == 0:
             loss_history.writer.close()
+        
+        time_end = datetime.datetime.now()
+        print("\033[1;33;44m[Info] 結束訓練時間=%s\033[0m" %time_end)
+        print("\033[1;33;44m[Info] 訓練時間花費=%s\033[0m" %(time_end - time_start))
+        

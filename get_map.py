@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from tqdm import tqdm
 
+from cfg import Cfg
 from utils.utils import get_classes
 from utils.utils_map import get_coco_map, get_map
 from yolo import YOLO
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     #   此处的classes_path用于指定需要测量VOC_map的类别
     #   一般情况下与训练和预测所用的classes_path一致即可
     #--------------------------------------------------------------------------------------#
-    classes_path    = 'model_data/voc_classes.txt'
+    #classes_path    = 'model_data/voc_classes.txt'
     #--------------------------------------------------------------------------------------#
     #   MINOVERLAP用于指定想要获得的mAP0.x，mAP0.x的意义是什么请同学们百度一下。
     #   比如计算mAP0.75，可以设定MINOVERLAP = 0.75。
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(map_out_path, 'images-optional')):
         os.makedirs(os.path.join(map_out_path, 'images-optional'))
 
-    class_names, _ = get_classes(classes_path)
+    class_names, _ = get_classes(Cfg.classes_path)
 
     if map_mode == 0 or map_mode == 1:
         print("Load model.")

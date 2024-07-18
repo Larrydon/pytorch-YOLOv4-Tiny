@@ -2,6 +2,9 @@
 #   predict.py将单张图片预测、摄像头检测、FPS测试和目录遍历检测等功能
 #   整合到了一个py文件中，通过指定mode进行模式的修改。
 #-----------------------------------------------------------------------#
+from ast import arg
+from signal import getitimer
+import sys
 import time
 
 import cv2
@@ -70,12 +73,16 @@ if __name__ == "__main__":
     #-------------------------------------------------------------------------#
     simplify        = True
     onnx_save_path  = "model_data/models.onnx"
+    
+    _predict_file_ = sys.argv[1]
 
     if mode != "predict_onnx":
         yolo = YOLO()
     else:
         yolo = YOLO_ONNX()
 
+#
+    print("\r\nmode=" + mode + "\r\n")
     if mode == "predict":
         '''
         1、如果想要进行检测完的图片的保存，利用r_image.save("img.jpg")即可保存，直接在predict.py里进行修改即可。 
@@ -86,15 +93,26 @@ if __name__ == "__main__":
         比如判断if predicted_class == 'car': 即可判断当前目标是否为车，然后记录数量即可。利用draw.text即可写字。
         '''
         while True:
-            img = input('Input image filename:')
+            #img = input('Input image filename:')
             try:
-                image = Image.open(img)
+                #image = Image.open(img)
+                print("predict file=" + _predict_file_)
+                image = Image.open(_predict_file_)                
             except:
                 print('Open Error! Try again!')
                 continue
             else:
+                time1 = time.time()
                 r_image = yolo.detect_image(image, crop = crop, count=count)
-                r_image.show()
+                time2 = time.time()
+                #r_image.show()
+                save_predict = _predict_file_.split('.jpg')
+                save_predict = save_predict[0] + "_predict.jpg"
+                #r_image.save(filename=None, ignore_discard=False, ignore_expires=False)
+                r_image.save(save_predict)
+                print("detect img cost seconds={}".format(time2 - time1))
+                print("predict save file=" + save_predict)
+                break
 
     elif mode == "video":
         capture = cv2.VideoCapture(video_path)

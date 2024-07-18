@@ -8,10 +8,13 @@ import torch.nn as nn
 import cv2
 from PIL import ImageDraw, ImageFont, Image
 
+from cfg import Cfg
 from nets.yolo import YoloBody
 from utils.utils import (cvtColor, get_anchors, get_classes, preprocess_input,
                          resize_image, show_config)
 from utils.utils_bbox import DecodeBox, DecodeBoxNP
+
+from cfg import Cfg
 
 '''
 训练自己的数据集必看注释！
@@ -26,14 +29,14 @@ class YOLO(object):
         #   验证集损失较低不代表mAP较高，仅代表该权值在验证集上泛化性能较好。
         #   如果出现shape不匹配，同时要注意训练时的model_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
-        "model_path"        : 'model_data/yolov4_tiny_weights_coco.pth',
-        "classes_path"      : 'model_data/coco_classes.txt',
+        #"model_path"        : 'model_data/yolov4_tiny_weights_coco.pth',
+        #"classes_path"      : 'model_data/coco_classes.txt',       
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
         #---------------------------------------------------------------------#
-        "anchors_path"      : 'model_data/yolo_anchors.txt',
-        "anchors_mask"      : [[3,4,5], [1,2,3]],
+        #"anchors_path"      : 'model_data/yolo_anchors.txt',
+        #"anchors_mask"      : [[3,4,5], [1,2,3]],
         #-------------------------------#
         #   所使用的注意力机制的类型
         #   phi = 0为不使用注意力机制
@@ -49,11 +52,13 @@ class YOLO(object):
         #---------------------------------------------------------------------#
         #   只有得分大于置信度的预测框会被保留下来
         #---------------------------------------------------------------------#
-        "confidence"        : 0.5,
+        # "confidence"        : 0.5,    #改使用 Cfg.conf_thresh = 0.4
+        "confidence"        : Cfg.conf_thresh,
         #---------------------------------------------------------------------#
         #   非极大抑制所用到的nms_iou大小
         #---------------------------------------------------------------------#
-        "nms_iou"           : 0.3,
+        # "nms_iou"           : 0.3,    #改使用 Cfg.nms_thresh = 0.6
+        "nms_iou"           : Cfg.nms_thresh,
         #---------------------------------------------------------------------#
         #   该变量用于控制是否使用letterbox_image对输入图像进行不失真的resize，
         #   在多次测试后，发现关闭letterbox_image直接resize的效果更好
@@ -85,9 +90,9 @@ class YOLO(object):
         #---------------------------------------------------#
         #   获得种类和先验框的数量
         #---------------------------------------------------#
-        self.class_names, self.num_classes  = get_classes(self.classes_path)
-        self.anchors, self.num_anchors      = get_anchors(self.anchors_path)
-        self.bbox_util                      = DecodeBox(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), self.anchors_mask)
+        self.class_names, self.num_classes  = get_classes(Cfg.classes_path)
+        self.anchors, self.num_anchors      = get_anchors(Cfg.anchors_path)
+        self.bbox_util                      = DecodeBox(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), Cfg.anchors_mask)
 
         #---------------------------------------------------#
         #   画框设置不同的颜色
@@ -106,11 +111,11 @@ class YOLO(object):
         #---------------------------------------------------#
         #   建立yolo模型，载入yolo模型的权重
         #---------------------------------------------------#
-        self.net    = YoloBody(self.anchors_mask, self.num_classes, self.phi)
+        self.net    = YoloBody(Cfg.anchors_mask, self.num_classes, self.phi)
         device      = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.net.load_state_dict(torch.load(self.model_path, map_location=device))
+        self.net.load_state_dict(torch.load(Cfg.predict_model_path, map_location=device))
         self.net    = self.net.eval()
-        print('{} model, anchors, and classes loaded.'.format(self.model_path))
+        print('{} model, anchors, and classes {} loaded.'.format(Cfg.predict_model_path, self.num_classes))
         if not onnx:
             if self.cuda:
                 self.net = nn.DataParallel(self.net)
@@ -429,13 +434,13 @@ class YOLO_ONNX(object):
         #   如果出现shape不匹配，同时要注意训练时的onnx_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
         "onnx_path"         : 'model_data/models.onnx',
-        "classes_path"      : 'model_data/coco_classes.txt',
+        #"classes_path"      : 'model_data/coco_classes.txt',
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
         #---------------------------------------------------------------------#
-        "anchors_path"      : 'model_data/yolo_anchors.txt',
-        "anchors_mask"      : [[3, 4, 5], [1, 2, 3]],
+        #"anchors_path"      : 'model_data/yolo_anchors.txt',
+        #"anchors_mask"      : [[3, 4, 5], [1, 2, 3]],
         #---------------------------------------------------------------------#
         #   输入图片的大小，必须为32的倍数。
         #---------------------------------------------------------------------#
@@ -481,9 +486,9 @@ class YOLO_ONNX(object):
         #---------------------------------------------------#
         #   获得种类和先验框的数量
         #---------------------------------------------------#
-        self.class_names, self.num_classes  = self.get_classes(self.classes_path)
-        self.anchors, self.num_anchors      = self.get_anchors(self.anchors_path)
-        self.bbox_util                      = DecodeBoxNP(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), self.anchors_mask)
+        self.class_names, self.num_classes  = self.get_classes(Cfg.classes_path)
+        self.anchors, self.num_anchors      = self.get_anchors(Cfg.anchors_path)
+        self.bbox_util                      = DecodeBoxNP(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), Cfg.anchors_mask)
 
         #---------------------------------------------------#
         #   画框设置不同的颜色
@@ -597,9 +602,9 @@ class YOLO_ONNX(object):
         input_feed  = self.get_input_feed(image_data)
         outputs     = self.onnx_session.run(output_names=self.output_name, input_feed=input_feed)
 
-        feature_map_shape   = [[int(j / (2 ** (i + 4))) for j in self.input_shape] for i in range(len(self.anchors_mask))][::-1]
-        for i in range(len(self.anchors_mask)):
-            outputs[i] = np.reshape(outputs[i], (1, len(self.anchors_mask[i]) * (5 + self.num_classes), feature_map_shape[i][0], feature_map_shape[i][1]))
+        feature_map_shape   = [[int(j / (2 ** (i + 4))) for j in self.input_shape] for i in range(len(Cfg.anchors_mask))][::-1]
+        for i in range(len(Cfg.anchors_mask)):
+            outputs[i] = np.reshape(outputs[i], (1, len(Cfg.anchors_mask[i]) * (5 + self.num_classes), feature_map_shape[i][0], feature_map_shape[i][1]))
         
         outputs = self.bbox_util.decode_box(outputs)
         #---------------------------------------------------------#
