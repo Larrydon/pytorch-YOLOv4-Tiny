@@ -141,5 +141,5 @@ dmypy.json
 
 data/img
 log
-#*.jpg
+*.jpg
 #*.json
