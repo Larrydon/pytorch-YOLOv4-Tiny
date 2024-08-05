@@ -165,7 +165,7 @@ class YOLO(object):
         #---------------------------------------------------------#
         #   设置字体与边框厚度
         #---------------------------------------------------------#
-        font        = ImageFont.truetype(font='model_data/simhei.ttf', size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
+        font        = ImageFont.truetype(font='model_data/simhei.ttf', size=np.floor(3e-2 * image.size[1] + 10).astype('int32'))
         thickness   = int(max((image.size[0] + image.size[1]) // np.mean(self.input_shape), 1))
         #---------------------------------------------------------#
         #   计数

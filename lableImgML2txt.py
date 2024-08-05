@@ -68,8 +68,18 @@ def convert_annotation(image_id, list_file):
         points=object["coordinates"]
         xmin = int(points['x'])
         ymin = int(points['y'])
-        xmax = xmin + int(points['width'])
-        ymax = ymin + int(points['height'])
+        #xmax = xmin + int(points['width'])
+        #ymax = ymin + int(points['height'])
+        
+        #>Larry fix ML format x_center, y_center to x1, y1
+        ml_width = int(points['width'])
+        ml_height = int(points['height'])
+        xmin = int(xmin - int(ml_width/2))
+        ymin = int(ymin - int(ml_height/2))
+        xmax = xmin + ml_width
+        ymax = ymin + ml_height
+        #<End
+        
         if cls not in classes:
             print("cls not in classes")
             continue

@@ -18,8 +18,8 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 Cfg = EasyDict()
 
-Cfg.UnFreeze_Epoch      = 2001 #300
-Cfg.Unfreeze_batch_size = 16
+Cfg.UnFreeze_Epoch      = 300	#300 #2001
+Cfg.Unfreeze_batch_size = 32	#32	#2
 
 Cfg.model_path   = 'weight/yolov4_tiny_weights_coco.pth'
 #Cfg.model_path  = 'weight/yolov4-tiny.pth'

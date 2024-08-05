@@ -16,7 +16,7 @@
     {
       //指定python解释器
       "python": "/home/yolo/anaconda3/envs/py38/bin/python",
-      "name": "Python labelImgML2txt Debug",
+      "name": "labelImgML2txt Debug",
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
@@ -26,7 +26,7 @@
     {
       //指定python解释器
       "python": "/home/yolo/anaconda3/envs/py38/bin/python",
-      "name": "Python ReplaceJSONlabel Debug",
+      "name": "ReplaceJSONlabel Debug",
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
@@ -40,14 +40,14 @@
     {
       //指定python解释器
       "python": "/home/yolo/anaconda3/envs/py38/bin/python",
-      "name": "Python predict Debug",
+      "name": "predict Debug",
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
       "args": [
         //"img/street.jpg"
-        "img/test.jpg"
+        "./data/test1.jpg"
       ]
     }
   ]
