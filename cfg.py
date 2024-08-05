@@ -26,7 +26,7 @@ Cfg.model_path   = 'weight/yolov4_tiny_weights_coco.pth'
 #Cfg.classes_path = 'model_data/coco_classes.txt'
 Cfg.classes_path = 'data/obj.names'
 
-Cfg.predict_model_path =  'checkpoints/last_epoch_weights.pth'
+Cfg.predict_model_path =  'checkpoints/best_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
 
 
 Cfg.anchors_path = 'model_data/yolo_anchors.txt'
@@ -41,5 +41,5 @@ Cfg.checkpoints = os.path.join(_BASE_DIR, 'checkpoints')
 Cfg.TRAIN_TENSORBOARD_DIR = os.path.join(_BASE_DIR, 'log')
 
 Cfg.keep_checkpoint_max = 10
-Cfg.conf_thresh =  0.4 #v4 0.4    #tiny 0.5
-Cfg.nms_thresh =  0.6  #v4 0.6    #tiny 0.3
+Cfg.conf_thresh =  0.5 #v4 0.4    #tiny 0.5
+Cfg.nms_thresh =  0.3  #v4 0.6    #tiny 0.3
