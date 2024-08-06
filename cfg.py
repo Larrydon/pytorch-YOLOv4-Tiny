@@ -21,12 +21,12 @@ Cfg = EasyDict()
 Cfg.UnFreeze_Epoch      = 300	#300 #2001
 Cfg.Unfreeze_batch_size = 32	#32	#2
 
-Cfg.model_path   = 'weight/yolov4_tiny_weights_coco.pth'
-#Cfg.model_path  = 'weight/yolov4-tiny.pth'
+#Cfg.model_path   = 'weight/yolov4_tiny_weights_coco.pth'
+Cfg.model_path  = 'weight/yolov4-tiny.pth'
 #Cfg.classes_path = 'model_data/coco_classes.txt'
 Cfg.classes_path = 'data/obj.names'
 
-Cfg.predict_model_path =  'checkpoints/best_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
+Cfg.predict_model_path =  'checkpoints/last_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
 
 
 Cfg.anchors_path = 'model_data/yolo_anchors.txt'

@@ -19,6 +19,9 @@ from cfg import Cfg
 '''
 训练自己的数据集必看注释！
 '''
+
+import faulthandler
+faulthandler.enable()
 class YOLO(object):
     _defaults = {
         #--------------------------------------------------------------------------#
@@ -135,27 +138,26 @@ class YOLO(object):
         #   给图像增加灰条，实现不失真的resize
         #   也可以直接resize进行识别
         #---------------------------------------------------------#
-        image_data  = resize_image(image, (self.input_shape[1],self.input_shape[0]), self.letterbox_image)
+        image_data  = resize_image(image, (self.input_shape[1],self.input_shape[0]), self.letterbox_image)        
         #---------------------------------------------------------#
         #   添加上batch_size维度
         #---------------------------------------------------------#
-        image_data  = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, dtype='float32')), (2, 0, 1)), 0)
-
+        image_data  = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, dtype='float32')), (2, 0, 1)), 0)        
         with torch.no_grad():
-            images = torch.from_numpy(image_data)
+            images = torch.from_numpy(image_data)            
             if self.cuda:
                 images = images.cuda()
             #---------------------------------------------------------#
             #   将图像输入网络当中进行预测！
             #---------------------------------------------------------#
             outputs = self.net(images)
-            outputs = self.bbox_util.decode_box(outputs)
+            outputs = self.bbox_util.decode_box(outputs)            
             #---------------------------------------------------------#
             #   将预测框进行堆叠，然后进行非极大抑制
             #---------------------------------------------------------#
             results = self.bbox_util.non_max_suppression(torch.cat(outputs, 1), self.num_classes, self.input_shape, 
                         image_shape, self.letterbox_image, conf_thres = self.confidence, nms_thres = self.nms_iou)
-                                                    
+
             if results[0] is None: 
                 return image
 
@@ -205,29 +207,48 @@ class YOLO(object):
             score           = top_conf[i]
 
             top, left, bottom, right = box
-
-            top     = max(0, np.floor(top).astype('int32'))
             left    = max(0, np.floor(left).astype('int32'))
-            bottom  = min(image.size[1], np.floor(bottom).astype('int32'))
+            top     = max(0, np.floor(top).astype('int32'))
             right   = min(image.size[0], np.floor(right).astype('int32'))
+            bottom  = min(image.size[1], np.floor(bottom).astype('int32'))            
 
             label = '{} {:.2f}'.format(predicted_class, score)
             draw = ImageDraw.Draw(image)
-            label_size = draw.textsize(label, font)
-            label = label.encode('utf-8')
-            print(label, top, left, bottom, right)
-            
-            if top - label_size[1] >= 0:
-                text_origin = np.array([left, top - label_size[1]])
+            #>2024-08-06 Larry modify 預設標註改成在預測框外(原本是框內，都會擋住目標)，除非是畫不下，才畫在框內
+            #label_size = draw.textsize(label, font)
+            if top > (12):
+                label_size = draw.textbbox(xy=[left, top - 12], text=label, font=font)
             else:
-                text_origin = np.array([left, top + 1])
+                label_size = draw.textbbox(xy=[left, top], text=label, font=font)
+            #<End
+            
+            label = label.encode('utf-8')
+            print(label, left, top, right, bottom )
+            
+            # if top - label_size[1] >= 0:
+            #     text_origin = np.array([left, top - label_size[1]])
+            # else:
+            #     text_origin = np.array([left, top + 1])
 
             for i in range(thickness):
                 draw.rectangle([left + i, top + i, right - i, bottom - i], outline=self.colors[c])
-            draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=self.colors[c])
-            draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
-            del draw
-
+            
+            #>2024-08-06 Larry modify 預設標註改成在預測框外(原本是框內，都會擋住目標)，除非是畫不下，才畫在框內
+            #draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=self.colors[c])
+            bbox_left = label_size[0]
+            bbox_top = label_size[1]
+            bbox_right = bbox_left + (label_size[2] - label_size[0])
+            bbox_bottom = bbox_top + (label_size[3] - label_size[1]) + 10
+            if top > (12):
+                bbox_hight = bbox_bottom - bbox_top
+                bbox_bottom = bbox_top
+                bbox_top = top - bbox_hight
+                
+            draw.rectangle([bbox_left, bbox_top, bbox_right, bbox_bottom], fill=self.colors[c])
+            draw.text([bbox_left, bbox_top], str(label,'UTF-8'), fill=(0, 0, 0), font=font)
+            #<End
+            
+            del draw            
         return image
         
     def get_FPS(self, image, test_interval):
