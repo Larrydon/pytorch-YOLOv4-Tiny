@@ -1,3 +1,32 @@
+# Anacoda Ubuntu PyTorch 環境 #
+環境安裝步驟:
+1.顯卡驅動 nvidia-driver（也叫做 cuda driver）：英伟达GPU驱动，命令：nvidia-smi
+2.Anaconda：（或者用阉割版的miniconda）用于创建虚拟环境
+3.python(使用 conda create -n 建立虛擬環境名稱 python=3.8指定版本)
+4.pytorch
+已經使用 pytorch 就不要另外再安裝 cunn
+pip install torch==1.12.1+cu102 torchvision==0.13.1+cu102 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu102
+5.pip install opencv-python==4.5.3.56	(太新會無法支援)
+6.pip install jupyter notebook(最後放棄了也可以不用裝，Debug能力沒有 VSCode好，改用VSCode 遠端 Debug，但是VSCode 已棄用Python3.6，至少3.7，改使用3.8)
+7.開始訓練
+跑YOLO code需要的套件包
+pip3 install -r requirements.txt
+
+
+要看YOLO支援的python版本到多少，這關係到全部的安裝
+大多都會寫在 requirements.txt 裡面就可以看出大概使用的版本
+torch == 1.6 => 最低Python 3.6 ~ 3.8
+先看 torch到多少，得到 Python版本後，查詢 PyTorch 支援的 Python版本可用到哪個版本和CUDA的版本
+決定好 CUDA版本(最後選擇 CUDA 10.2，Python是3.6)，採用 pip安裝
+此外多數的YOLO project都會使用到 OpenCV來處理影像，所以這個版本就要看 Python決定使用的版本是多少，也要搭配
+不過OpenCV可以先在隔離的環境下安裝好，這樣再跑 requirements.txt 比較不會出錯
+最後編譯YOLO code的 requirements.txt 會在另外指定要安裝的 torch版本和 numpy等等版本
+先不改，先能夠編譯成功在說。
+
+
+
+
+以下是原作者的原文
 ## YOLOV4-Tiny：You Only Look Once-Tiny目标检测模型在Pytorch当中的实现
 ---
 
