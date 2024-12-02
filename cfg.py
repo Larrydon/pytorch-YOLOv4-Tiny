@@ -26,7 +26,10 @@ Cfg.model_path  = 'weight/yolov4-tiny.pth'
 #Cfg.classes_path = 'model_data/coco_classes.txt'
 Cfg.classes_path = 'data/obj.names'
 
-Cfg.predict_model_path =  'checkpoints/best_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
+#訓練時的位置
+#Cfg.predict_model_path =  'checkpoints/best_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
+#最後使用權重的位置(將訓練時叫好的權重複製過來)
+Cfg.predict_model_path =  'weight/best_epoch_weights.pth'  #last_epoch_weights.pth 或是 best_epoch_weights.pth
 
 
 Cfg.anchors_path = 'model_data/yolo_anchors.txt'
