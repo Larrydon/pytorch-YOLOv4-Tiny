@@ -26,6 +26,73 @@ torch == 1.6 => 最低Python 3.6 ~ 3.8
 
 
 
+# 檔案使用說明 #
+data	資料集或是數據集 70%~80%	(訓練用資料都放在 data下的 標籤過得圖檔資料夾)
+	[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/data/]
+	即為標籤圖檔(標註資料)時，標出來需要偵測的物件們(name class)
+	其中還可以分出驗證集 20%~30%，驗證用的圖檔，可以在透過標籤工具後另使用不同文字檔分開，
+	跑 lableImgML2txt.py 將obj.img 取出全部檔案數量後，取20%、80%的比例(Sample img 的話就可以不用執行，有新的訓練集照片才要重跑)
+	(trainval_files, test_files = train_test_split(image_ids, test_size=0.2, random_state=55) 表示將 20% 的資料分配給驗證集)
+	即分成 train.txt 和 valid.txt
+	obj.names	標籤類別名稱(自己生成，可從 lableImg 處理完的 classes.txt另存)
+	obj.data	定義訓練集圖檔路徑和生成文字路徑，最好使用絕對路徑來避免誤會(自己生成)
+	
+	統一用路徑為(原本COCO Set的架構)改成自備好 data/img、data/obj.data、data/obj.names後由程式處理(跑 lableImgML2txt.py)
+	data/img	訓練用圖檔和標籤完成的圖檔資料夾(會有圖檔和YOLO格式TXT)
+	data/obj.data	定義訓練集圖檔路徑和生成文字路徑
+	data/obj.names	標籤類別名稱
+	data/train.txt	訓練集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)
+	data/valid.txt	驗證集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)
+
+
+ weight	權重檔	(另外新增 weight資料夾，分類比較清楚，全都放權重檔)	
+weight資料夾[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/src/branch/master/weight/]
+	訓練完成的權重檔，之後測試(偵測)各圖檔需要使用的engine
+	通常 yolo裡的 .weights(例如: yolov4.weights) 僅供測試darknet用，後續自定義訓練用不到。
+.pth	pytorch版本的權重檔
+	和 weights作用一樣，也可從 weights做轉換變成 pytorch版本
+	
+xxx.conv.數字	自定義預訓練權重檔，也叫做[預訓模型]，自定義訓練使用的
+	從官網
+	https://github.com/AlexeyAB/Darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects
+	How to train (to detect your custom objects)
+	下載自定義預訓練權重檔
+	cfg/yolov4-custom.cfg	yolov4.conv.137(yolov4的)
+	cfg/yolov4-tiny-custom.cfg	yolov4.conv.29(yolov4-tiny的)
+	如果想換成Yolov4或其它系列模型進行訓練，請要修改對應的預訓練檔及修改config檔案裡的 filters
+	So if classes=1 then should be filters=18. If classes=2 then write filters=21. (Do not write in the cfg-file: filters=(classes + 5)x3)
+
+
+# cfg.py 參數設定 # (訓練的時候常會修改到的參數，從 train.py 裡拉到cfg.py處理)
+Cfg.classes_path = 'data/obj.names'
+Cfg.model_path = 'weight/yolov4-tiny.pth'
+Cfg.Unfreeze_batch_size = 2
+Cfg.train_label = os.path.join(_BASE_DIR, 'data', 'train.txt')
+Cfg.val_label   = os.path.join(_BASE_DIR, 'data' ,'valid.txt')
+
+
+
+
+# predict.py、train.py、lableImgML2txt.py 帶入的參數 #
+使用權重檔來測試圖片
+Cfg.predict_model_path = 'checkpoints/last_epoch_weights.pth' 調整要使用的權重 last_epoch_weights.pth 或是 best_epoch_weights.pth
+代入 測試圖檔路徑"./data/test1.jpg"
+=> python predict.py "./data/test1.jpg"
+
+
+開始訓練自定義模型
+不用參數，有調整從 cfg.py 讀出設定的參數
+=> python train.py
+
+
+將標籤好的圖檔，生成訓練集和驗證集(80%、20%的比例)
+自動跑完生成檔案 /data/train.txt 和 /data/valid.txt
+使用一致，帶入4個參數 -dir", "/data/img", "-clasessname", "/data/obj.names
+=> python lableImgML2txt.py -dir /data/img -clasessname /data/obj.names
+
+
+
+
 以下是原作者的原文
 ## YOLOV4-Tiny：You Only Look Once-Tiny目标检测模型在Pytorch当中的实现
 ---
