@@ -1,104 +1,114 @@
 # Anacoda Ubuntu PyTorch 環境 #
-環境安裝步驟:
-1.顯卡驅動 nvidia-driver（也叫做 cuda driver）：英伟达GPU驱动，命令：nvidia-smi
-2.Anaconda：（或者用阉割版的miniconda）用于创建虚拟环境
-3.python(使用 conda create -n 建立虛擬環境名稱 python=3.8指定版本)
-4.pytorch
-已經使用 pytorch 就不要另外再安裝 cunn
-pip install torch==1.12.1+cu102 torchvision==0.13.1+cu102 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu102
-5.pip install opencv-python==4.5.3.56	(太新會無法支援)
-6.pip install jupyter notebook(最後放棄了也可以不用裝，Debug能力沒有 VSCode好，改用VSCode 遠端 Debug，但是VSCode 已棄用Python3.6，至少3.7，改使用3.8)
-7.開始訓練
-跑YOLO code需要的套件包
-pip3 install -r requirements.txt
-
-
-要看YOLO支援的python版本到多少，這關係到全部的安裝
-大多都會寫在 requirements.txt 裡面就可以看出大概使用的版本
-torch == 1.6 => 最低Python 3.6 ~ 3.8
-先看 torch到多少，得到 Python版本後，查詢 PyTorch 支援的 Python版本可用到哪個版本和CUDA的版本
-決定好 CUDA版本(最後選擇 CUDA 10.2，Python是3.6)，採用 pip安裝
-此外多數的YOLO project都會使用到 OpenCV來處理影像，所以這個版本就要看 Python決定使用的版本是多少，也要搭配
-不過OpenCV可以先在隔離的環境下安裝好，這樣再跑 requirements.txt 比較不會出錯
+環境安裝步驟:  
+1.顯卡驅動 nvidia-driver（也叫做 cuda driver）：英伟达GPU驱动，命令：nvidia-smi  
+2.Anaconda：（或者用阉割版的miniconda）用于创建虚拟环境  
+3.python(使用 conda create -n 建立虛擬環境名稱 python=3.8指定版本)  
+4.pytorch  
+已經使用 pytorch 就不要另外再安裝 cunn  
+pip install torch==1.12.1+cu102 torchvision==0.13.1+cu102 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu102  
+5.pip install opencv-python==4.5.3.56	(太新會無法支援)  
+6.pip install jupyter notebook(最後放棄了也可以不用裝，Debug能力沒有 VSCode好，改用VSCode 遠端 Debug，但是VSCode 已棄用Python3.6，至少3.7，改使用3.8)  
+7.開始訓練  
+跑YOLO code需要的套件包  
+pip3 install -r requirements.txt  
+<br>
+<br>
+要看YOLO支援的python版本到多少，這關係到全部的安裝  
+大多都會寫在 requirements.txt 裡面就可以看出大概使用的版本  
+torch == 1.6 => 最低Python 3.6 ~ 3.8  
+先看 torch到多少，得到 Python版本後，查詢 PyTorch 支援的 Python版本可用到哪個版本和CUDA的版本  
+決定好 CUDA版本(最後選擇 CUDA 10.2，Python是3.6)，採用 pip安裝  
+此外多數的YOLO project都會使用到 OpenCV來處理影像，所以這個版本就要看 Python決定使用的版本是多少，也要搭配  
+不過OpenCV可以先在隔離的環境下安裝好，這樣再跑 requirements.txt 比較不會出錯  
 最後編譯YOLO code的 requirements.txt 會在另外指定要安裝的 torch版本和 numpy等等版本
-先不改，先能夠編譯成功在說。
-
-
-
+先不改，先能夠編譯成功在說。  
+<br>
+<br>
+<br>
+<br>
 
 # 檔案使用說明 #
-data	資料集或是數據集 70%~80%	(訓練用資料都放在 data下的 標籤過得圖檔資料夾)
-	[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/data/]
-	即為標籤圖檔(標註資料)時，標出來需要偵測的物件們(name class)
+### data	資料集或是數據集 70%~80%	(訓練用資料都放在 data下的 標籤過得圖檔資料夾)
+	[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/data/]  
+	即為標籤圖檔(標註資料)時，標出來需要偵測的物件們(name class)  
 	其中還可以分出驗證集 20%~30%，驗證用的圖檔，可以在透過標籤工具後另使用不同文字檔分開，
-	跑 lableImgML2txt.py 將obj.img 取出全部檔案數量後，取20%、80%的比例(Sample img 的話就可以不用執行，有新的訓練集照片才要重跑)
-	(trainval_files, test_files = train_test_split(image_ids, test_size=0.2, random_state=55) 表示將 20% 的資料分配給驗證集)
-	即分成 train.txt 和 valid.txt
-	obj.names	標籤類別名稱(自己生成，可從 lableImg 處理完的 classes.txt另存)
-	obj.data	定義訓練集圖檔路徑和生成文字路徑，最好使用絕對路徑來避免誤會(自己生成)
+	跑 lableImgML2txt.py 將obj.img 取出全部檔案數量後，取20%、80%的比例(Sample img 的話就可以不用執行，有新的訓練集照片才要重跑)  
+	(trainval_files, test_files = train_test_split(image_ids, test_size=0.2, random_state=55) 表示將 20% 的資料分配給驗證集)  
+	即分成 train.txt 和 valid.txt  
+	obj.names	標籤類別名稱(自己生成，可從 lableImg 處理完的 classes.txt另存)  
+	obj.data	定義訓練集圖檔路徑和生成文字路徑，最好使用絕對路徑來避免誤會(自己生成)  
 	
-	統一用路徑為(原本COCO Set的架構)改成自備好 data/img、data/obj.data、data/obj.names後由程式處理(跑 lableImgML2txt.py)
-	data/img	訓練用圖檔和標籤完成的圖檔資料夾(會有圖檔和ML格式json)	若是壹傳圖檔格式，則要透過 ConvertEtroIMG2SingleID.py 先統一圖檔ID(.jpg)和.json的命名
+	統一用路徑為(原本COCO Set的架構)改成自備好 data/img、data/obj.data、data/obj.names後由程式處理(跑 lableImgML2txt.py)  
+	data/img	訓練用圖檔和標籤完成的圖檔資料夾(會有圖檔和ML格式json)	若是壹傳圖檔格式，則要透過 ConvertEtroIMG2SingleID.py   先統一圖檔ID(.jpg)和.json的命名
 	data/obj.data	定義訓練集圖檔路徑和生成文字路徑
 	data/obj.names	標籤類別名稱
 	data/train.txt	訓練集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)
-	data/valid.txt	驗證集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)
+	data/valid.txt	驗證集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)  
+<br>
+<br>
 
+### weight	權重檔	(另外新增 weight資料夾，分類比較清楚，全都放權重檔)	
+### weight資料夾[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/src/branch/master/weight/]  
+	訓練完成的權重檔，之後測試(偵測)各圖檔需要使用的engine  
+	通常 yolo裡的 .weights(例如: yolov4.weights) 僅供測試darknet用，後續自定義訓練用不到。  
+<br>
+<br>
 
- weight	權重檔	(另外新增 weight資料夾，分類比較清楚，全都放權重檔)	
-weight資料夾[http://10.1.21.196:3000/YOLO_Developer/YOLOv4-Tiny_Data/src/branch/master/weight/]
-	訓練完成的權重檔，之後測試(偵測)各圖檔需要使用的engine
-	通常 yolo裡的 .weights(例如: yolov4.weights) 僅供測試darknet用，後續自定義訓練用不到。
-.pth	pytorch版本的權重檔
-	和 weights作用一樣，也可從 weights做轉換變成 pytorch版本
+### .pth	pytorch版本的權重檔
+	和 weights作用一樣，也可從 weights做轉換變成 pytorch版本  
 	
-xxx.conv.數字	自定義預訓練權重檔，也叫做[預訓模型]，自定義訓練使用的
-	從官網
-	https://github.com/AlexeyAB/Darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects
-	How to train (to detect your custom objects)
-	下載自定義預訓練權重檔
-	cfg/yolov4-custom.cfg	yolov4.conv.137(yolov4的)
-	cfg/yolov4-tiny-custom.cfg	yolov4.conv.29(yolov4-tiny的)
-	如果想換成Yolov4或其它系列模型進行訓練，請要修改對應的預訓練檔及修改config檔案裡的 filters
-	So if classes=1 then should be filters=18. If classes=2 then write filters=21. (Do not write in the cfg-file: filters=(classes + 5)x3)
+	xxx.conv.數字	自定義預訓練權重檔，也叫做[預訓模型]，自定義訓練使用的  
+	從官網  
+	https://github.com/AlexeyAB/  Darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects
+	How to train (to detect your custom objects)  
+	下載自定義預訓練權重檔  
+	cfg/yolov4-custom.cfg	yolov4.conv.137(yolov4的)  
+	cfg/yolov4-tiny-custom.cfg	yolov4.conv.29(yolov4-tiny的)  
+	如果想換成Yolov4或其它系列模型進行訓練，請要修改對應的預訓練檔及修改config檔案裡的 filters  
+	So if classes=1 then should be filters=18. If classes=2 then write filters=21. (Do not write in the cfg-file: filters=(classes + 5)x3)  
+<br>
+<br>
+<br>
+<br>
 
+# cfg.py 參數設定 # (訓練的時候常會修改到的參數，從 train.py 裡拉到cfg.py處理)  
+Cfg.classes_path = 'data/obj.names'  
+Cfg.model_path = 'weight/yolov4-tiny.pth'  
+Cfg.Unfreeze_batch_size = 2  
+Cfg.train_label = os.path.join(_BASE_DIR, 'data', 'train.txt')  
+Cfg.val_label   = os.path.join(_BASE_DIR, 'data' ,'valid.txt')  
+<br>
+<br>
+<br>
+<br>
 
-# cfg.py 參數設定 # (訓練的時候常會修改到的參數，從 train.py 裡拉到cfg.py處理)
-Cfg.classes_path = 'data/obj.names'
-Cfg.model_path = 'weight/yolov4-tiny.pth'
-Cfg.Unfreeze_batch_size = 2
-Cfg.train_label = os.path.join(_BASE_DIR, 'data', 'train.txt')
-Cfg.val_label   = os.path.join(_BASE_DIR, 'data' ,'valid.txt')
+# predict.py、train.py、lableImgML2txt.py、ConvertEtroIMG2SingleID.py 帶入的參數 #  
+使用權重檔來測試圖片  
+Cfg.predict_model_path = 'checkpoints/last_epoch_weights.pth' 調整要使用的權重 last_epoch_weights.pth 或是 best_epoch_weights.pth  
+代入 測試圖檔路徑"./data/test1.jpg"  
+=> python predict.py "./data/test1.jpg"  
+<br>
+<br>
+開始訓練自定義模型  
+不用參數，有調整從 cfg.py 讀出設定的參數  
+=> python train.py  
+<br>
+<br>
+將標籤好的圖檔，生成訓練集和驗證集(80%、20%的比例)  
+自動跑完生成檔案 /data/train.txt 和 /data/valid.txt  
+使用一致，帶入4個參數 -dir", "/data/img", "-clasessname", "/data/obj.names  
+=> python lableImgML2txt.py -dir /data/img -clasessname /data/obj.names  
+<br>
+<br>
+將 Etro產品的圖檔命名規則改至單一檔案上，用檔名來當作唯一值，才能夠提供給圖檔 index  
+"壹傳格式的圖檔資料夾(年/月/日/車格名稱/車格名稱_時間_第幾張.jpg)", "要存儲的路徑資料夾", "在轉換完成之後是否刪除來源圖檔"  
+=> python ConvertEtroIMG2SingleID.py "C:\\Users\\Administrator\\Desktop\\IMG\\SL100\\停管\\錦洲街-民權東路\\2024\\03\\01\\1正常(分類)" "C:\\Users\\Administrator\\Desktop\\IMG\\SL100\\停管\\錦洲街-民權東路\\1正常(編號)" "1"  
+<br>
+<br>
+<br>
+<br>
 
-
-
-
-# predict.py、train.py、lableImgML2txt.py、ConvertEtroIMG2SingleID.py 帶入的參數 #
-使用權重檔來測試圖片
-Cfg.predict_model_path = 'checkpoints/last_epoch_weights.pth' 調整要使用的權重 last_epoch_weights.pth 或是 best_epoch_weights.pth
-代入 測試圖檔路徑"./data/test1.jpg"
-=> python predict.py "./data/test1.jpg"
-
-
-開始訓練自定義模型
-不用參數，有調整從 cfg.py 讀出設定的參數
-=> python train.py
-
-
-將標籤好的圖檔，生成訓練集和驗證集(80%、20%的比例)
-自動跑完生成檔案 /data/train.txt 和 /data/valid.txt
-使用一致，帶入4個參數 -dir", "/data/img", "-clasessname", "/data/obj.names
-=> python lableImgML2txt.py -dir /data/img -clasessname /data/obj.names
-
-
-將 Etro產品的圖檔命名規則改至單一檔案上，用檔名來當作唯一值，才能夠提供給圖檔 index
-"壹傳格式的圖檔資料夾(年/月/日/車格名稱/車格名稱_時間_第幾張.jpg)", "要存儲的路徑資料夾", "在轉換完成之後是否刪除來源圖檔"
-=> python ConvertEtroIMG2SingleID.py "C:\\Users\\Administrator\\Desktop\\IMG\\SL100\\停管\\錦洲街-民權東路\\2024\\03\\01\\1正常(分類)" "C:\\Users\\Administrator\\Desktop\\IMG\\SL100\\停管\\錦洲街-民權東路\\1正常(編號)" "1"
-
-
-
-
-以下是原作者的原文
+# 以下是原作者的原文  
 ## YOLOV4-Tiny：You Only Look Once-Tiny目标检测模型在Pytorch当中的实现
 ---
 
