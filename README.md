@@ -39,11 +39,11 @@ torch == 1.6 => 最低Python 3.6 ~ 3.8
 	obj.data	定義訓練集圖檔路徑和生成文字路徑，最好使用絕對路徑來避免誤會(自己生成)  
 	
 	統一用路徑為(原本COCO Set的架構)改成自備好 data/img、data/obj.data、data/obj.names後由程式處理(跑 lableImgML2txt.py)  
-	data/img	訓練用圖檔和標籤完成的圖檔資料夾(會有圖檔和ML格式json)	若是壹傳圖檔格式，則要透過 ConvertEtroIMG2SingleID.py   先統一圖檔ID(.jpg)和.json的命名
-	data/obj.data	定義訓練集圖檔路徑和生成文字路徑
-	data/obj.names	標籤類別名稱
-	data/train.txt	訓練集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)
-	data/valid.txt	驗證集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py)  
+	data/img	訓練用圖檔和標籤完成的圖檔資料夾(會有圖檔和ML格式json)	若是壹傳圖檔格式，則要透過 ConvertEtroIMG2SingleID.py   先統一圖檔ID(.jpg)和.json的命名  
+	data/obj.data	定義訓練集圖檔路徑和生成文字路徑  
+	data/obj.names	標籤類別名稱  
+	data/train.txt	訓練集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py) Pascal VOC 格式  
+	data/valid.txt	驗證集文字檔，改成 Tianxiaomo/pytorch-YOLOv4 PyTorch版本(跑 lableImgML2txt.py) Pascal VOC 格式  
 <br>
 <br>
 
@@ -59,7 +59,7 @@ torch == 1.6 => 最低Python 3.6 ~ 3.8
 	
 	xxx.conv.數字	自定義預訓練權重檔，也叫做[預訓模型]，自定義訓練使用的  
 	從官網  
-	https://github.com/AlexeyAB/  Darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects
+	https://github.com/AlexeyAB/  Darknet#how-to-train-tiny-yolo-to-detect-your-custom-objects  
 	How to train (to detect your custom objects)  
 	下載自定義預訓練權重檔  
 	cfg/yolov4-custom.cfg	yolov4.conv.137(yolov4的)  
