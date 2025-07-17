@@ -108,6 +108,15 @@ Cfg.predict_model_path = 'checkpoints/last_epoch_weights.pth' 調整要使用的
 <br>
 <br>
 
+# MLjson2YOLOtxt.py 將ML .json 轉成 YOLO .txt #  
+修改程式碼中的<input_dir>資料夾路徑後，直接執行就會轉換了  
+input_dir = r"R:\FTP\大安\1正常"  
+=> python MLjson2YOLOtxt.py  
+<br>
+<br>
+<br>
+<br>
+
 # 以下是原作者的原文  
 ## YOLOV4-Tiny：You Only Look Once-Tiny目标检测模型在Pytorch当中的实现
 ---
